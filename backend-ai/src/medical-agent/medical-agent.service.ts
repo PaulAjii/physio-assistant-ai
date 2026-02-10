@@ -12,8 +12,6 @@ export class MedicalAgentService {
     }
 
     async processConsultation(audioBuffer: Buffer, mimeType: string) {
-        const base64Audio = audioBuffer.toString('base64');
-
         const content = [
             {
                 type: 'text' as const,
@@ -21,7 +19,7 @@ export class MedicalAgentService {
             },
             {
                 type: 'file' as const,
-                data: base64Audio, 
+                data: audioBuffer, 
                 mimeType: mimeType, 
             },
         ];
