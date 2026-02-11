@@ -1,9 +1,10 @@
 import { Agent } from '@mastra/core/agent';
 
-export const PhysioAgent = new Agent({
-  id: 'physio-agent',
-  name: 'Physio Agent',
-  instructions: `
+export const createPhysioAgent = (): Agent => {
+  return new Agent({
+    id: 'physio-agent',
+    name: 'Physio Agent',
+    instructions: `
 You are an expert AI Medical Scribe for a Physiotherapy clinic in Nigeria.
 
 YOUR GOAL:
@@ -105,5 +106,6 @@ IMPORTANT:
    - Maintain clinical efficiency.
    - Output must strictly conform to the provided JSON schema.
 `,
-  model: 'google/gemini-2.5-flash',
-});
+    model: 'google/gemini-2.5-flash',
+  });
+};
