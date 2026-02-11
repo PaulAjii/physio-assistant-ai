@@ -33,7 +33,7 @@ func (h *ConsultationHandler) UploadAudio(c fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"status":     "success",
 		"message":    "Consultation audio uploaded successfully",
-		"statusCode": fiber.StatusCreated,
+		"statusCode": fiber.StatusOK,
 		"path":       savedFile,
 	})
 }
