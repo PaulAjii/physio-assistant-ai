@@ -1,17 +1,45 @@
 import { Injectable } from '@nestjs/common';
-import { PhysioAgent } from '../mastra/agents/physio-agent';
-import { Agent } from '@mastra/core';
+import { createPhysioAgent } from '../mastra/agents/physio-agent';
 import { MedicalNoteSchema } from 'src/mastra/schemas/medical-schema';
+import * as path from 'path';
 
 @Injectable()
 export class MedicalAgentService {
-  private agent: Agent;
+  async processConsultation(
+    audioBuffer: Buffer,
+    incomingMimeType: string,
+    fileName: string,
+  ) {
+    const agent = createPhysioAgent();
 
-  constructor() {
-    this.agent = PhysioAgent;
-  }
+    let mimeType = incomingMimeType;
 
-  async processConsultation(audioBuffer: Buffer, mimeType: string) {
+    if (mimeType === 'application/octet-stream' || !mimeType) {
+      const ext = path.extname(fileName).toLowerCase();
+
+      const mimeMap: Record<string, string> = {
+        '.mp3': 'audio/mp3',
+        '.wav': 'audio/wav',
+        '.aac': 'audio/aac',
+        '.m4a': 'audio/mp4',
+        '.flac': 'audio/flac',
+        '.ogg': 'audio/ogg',
+        '.webm': 'audio/webm',
+      };
+
+      if (mimeMap[ext]) {
+        console.log(
+          `⚠️ Detected generic MIME. Inferred '${mimeMap[ext]}' from extension '${ext}'`,
+        );
+        mimeType = mimeMap[ext];
+      } else {
+        console.warn(
+          `⚠️ Could not infer type from '${ext}'. Defaulting to 'audio/aac'`,
+        );
+        mimeType = 'audio/aac';
+      }
+    }
+
     const content = [
       {
         type: 'text' as const,
@@ -49,7 +77,7 @@ You are an expert Medical Scribe. Extract data into the provided JSON schema.
     ];
 
     try {
-      const response = await this.agent.generate([{ role: 'user', content }], {
+      const response = await agent.generate([{ role: 'user', content }], {
         structuredOutput: {
           schema: MedicalNoteSchema,
         },
@@ -61,7 +89,7 @@ You are an expert Medical Scribe. Extract data into the provided JSON schema.
       });
       return response.object;
     } catch (err) {
-      console.error('Error processing consultation: ', err.message || err);
+      console.error('Error processing consultation: ', err);
       throw new Error('Failed to process the consultation.');
     }
   }
