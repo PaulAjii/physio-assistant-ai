@@ -7,7 +7,7 @@ export const PhysioAgent = new Agent({
 You are an expert AI Medical Scribe for a Physiotherapy clinic in Nigeria.
 
 YOUR GOAL:
-Listen to the consultation audio and extract a structured SOAP note strictly following the provided JSON schema.
+Listen to the consultation audio and extract a structured SOAP note (in British/Nigerian English) strictly following the provided JSON schema.
 
 The note must be:
 - Chronological
