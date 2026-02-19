@@ -1,8 +1,12 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/PaulAjii/physio-assistant-ai/internal/utils"
 	"github.com/gofiber/fiber/v3"
+	"github.com/google/uuid"
 )
 
 type ConsultationHandler struct{}
@@ -30,10 +34,58 @@ func (h *ConsultationHandler) UploadAudio(c fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(fiber.Map{
+	jobId := uuid.New().String()
+
+	utils.Store.Register(jobId)
+
+	go func() {
+		// aiBackendUri := os.Getenv("AI_BACKEND_URI")
+		aiBackendUri := "http://localhost:5000/ai/process-audio"
+		result, err := utils.ForwardAudioToAI(savedFile, aiBackendUri)
+		utils.Store.Complete(jobId, result, err)
+	}()
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status":     "success",
-		"message":    "Consultation audio uploaded successfully",
+		"message":    "Audio file received and processing has begun",
 		"statusCode": fiber.StatusOK,
-		"path":       savedFile,
+		"jobID":      jobId,
 	})
+}
+
+func (h *ConsultationHandler) StreamResult(c fiber.Ctx) error {
+	jobId := c.Params("jobId")
+
+	job := utils.Store.Get(jobId)
+	if job == nil {
+		return c.Status(fiber.ErrNotFound.Code).JSON(fiber.Map{
+			"status":     "error",
+			"message":    "Job not found",
+			"statusCode": fiber.ErrNotFound.Code,
+		})
+	}
+
+	c.Set("Content-Type", "text/event-stream")
+	c.Set("Cache-Control", "no-cache")
+	c.Set("Connection", "keep-alive")
+	c.Set("Transfer-Encoding", "chunked")
+
+	<-utils.Store.Wait(jobId)
+
+	completed := utils.Store.Get(jobId)
+
+	var event string
+	if completed.Error != nil {
+		event = fmt.Sprintf("event: error\ndata: {\"message\": \"%s\"}\n\n", completed.Error.Error())
+	} else {
+		var result map[string]interface{}
+		json.Unmarshal(completed.Result, &result)
+		data, _ := json.Marshal(result)
+		event = fmt.Sprintf("event: result\ndata: %s\n\n", string(data))
+	}
+
+	c.WriteString(event)
+	utils.Store.Delete(jobId)
+
+	return nil
 }

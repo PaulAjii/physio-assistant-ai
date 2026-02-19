@@ -3,14 +3,22 @@ package main
 import (
 	"github.com/PaulAjii/physio-assistant-ai/internal/handlers"
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/log"
+
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 )
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		BodyLimit: 50 * 1024 * 1024,
+	})
 
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{"Origin", "Content-Type", "Accept"},
+	}))
 	app.Use(logger.New())
 
 	consultationHandler := handlers.NewConsultationHandler()
@@ -19,8 +27,8 @@ func main() {
 		return c.SendString("Hello, World!")
 	})
 
-	api := app.Group("/api/v1")
-	api.Post("/upload", consultationHandler.UploadAudio)
+	app.Get("/stream/:jobId", consultationHandler.StreamResult)
+	app.Post("/upload", consultationHandler.UploadAudio)
 
-	app.Listen(":8080")
+	log.Fatal(app.Listen(":8080"))
 }
