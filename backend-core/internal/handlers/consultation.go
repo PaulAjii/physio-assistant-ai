@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/PaulAjii/physio-assistant-ai/internal/models"
 	"github.com/PaulAjii/physio-assistant-ai/internal/utils"
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
@@ -73,19 +74,40 @@ func (h *ConsultationHandler) StreamResult(c fiber.Ctx) error {
 	<-utils.Store.Wait(jobId)
 
 	completed := utils.Store.Get(jobId)
+	utils.Store.Delete(jobId)
 
 	var event string
 	if completed.Error != nil {
-		event = fmt.Sprintf("event: error\ndata: {\"message\": \"%s\"}\n\n", completed.Error.Error())
-	} else {
-		var result map[string]interface{}
-		json.Unmarshal(completed.Result, &result)
-		data, _ := json.Marshal(result)
-		event = fmt.Sprintf("event: result\ndata: %s\n\n", string(data))
+		payload, _ := json.Marshal(fiber.Map{
+			"status":     "error",
+			"message":    completed.Error.Error(),
+			"statusCode": fiber.ErrInternalServerError.Code,
+		})
+		event = fmt.Sprintf("event: error\ndata: %s\n\n", string(payload))
+		c.WriteString(event)
+		return nil
 	}
 
-	c.WriteString(event)
-	utils.Store.Delete(jobId)
+	var result models.AIResponse
+	if err := json.Unmarshal(completed.Result, &result); err != nil {
+		payload, _ := json.Marshal(fiber.Map{
+			"status":     "error",
+			"message":    "Failed to parse AI response",
+			"statusCode": fiber.ErrInternalServerError.Code,
+		})
+		event = fmt.Sprintf("event: error\ndata: %s\n\n", string(payload))
+		c.WriteString(event)
+		return nil
+	}
 
+	payload, _ := json.Marshal(fiber.Map{
+		"status":        "success",
+		"message":       result.Message,
+		"statusCode":    fiber.StatusOK,
+		"processedData": result.Data,
+	})
+	event = fmt.Sprintf("event: result\ndata: %s\n\n", string(payload))
+
+	c.WriteString(event)
 	return nil
 }
