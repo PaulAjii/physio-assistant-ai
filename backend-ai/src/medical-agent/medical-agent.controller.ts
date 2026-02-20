@@ -1,5 +1,6 @@
 import {
   Controller,
+  HttpCode,
   HttpStatus,
   ParseFilePipeBuilder,
   Post,
@@ -15,6 +16,7 @@ export class MedicalAgentController {
   constructor(private readonly medicalAgentService: MedicalAgentService) {}
 
   @Post('/process-audio')
+  @HttpCode(HttpStatus.OK)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: { fileSize: 50 * 1024 * 1024 },
