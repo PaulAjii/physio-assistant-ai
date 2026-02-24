@@ -11,7 +11,7 @@ export const useConsultation = () => {
       status: string;
       message: string;
       statusCode: number;
-      jobId?: string;
+      jobID?: string;
     }>(`${baseUri}/consultation/upload`, {
       method: "POST",
       body: formData,
