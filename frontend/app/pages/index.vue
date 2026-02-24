@@ -4,6 +4,9 @@
       <template #header>
         <div class="flex-flex-col gap-1">
           <h1 class="text-xl font-semibold">Physio Assistant</h1>
+          <p class="text-sm text-gray-500">
+            Upload a consultation audio recording to begin
+          </p>
         </div>
       </template>
     </UCard>
