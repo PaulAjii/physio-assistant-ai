@@ -27,8 +27,9 @@ func main() {
 		return c.SendString("Hello, World!")
 	})
 
-	app.Get("/stream/:jobId", consultationHandler.StreamResult)
-	app.Post("/upload", consultationHandler.UploadAudio)
+	consultationGroup := app.Group("/api/v1/consultation")
+	consultationGroup.Get("/stream/:jobId", consultationHandler.StreamResult)
+	consultationGroup.Post("/upload", consultationHandler.UploadAudio)
 
 	log.Fatal(app.Listen(":8080"))
 }
