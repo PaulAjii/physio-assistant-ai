@@ -112,3 +112,36 @@ func (h *ConsultationHandler) StreamResult(c fiber.Ctx) error {
 	c.WriteString(event)
 	return nil
 }
+
+func (h *ConsultationHandler) CollateResults(c fiber.Ctx) error {
+	var submission *models.AssessmentSubmission
+	if err := c.Bind().Body(&submission); err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"status": "error",
+			"message": "Invalid request body. Enure it matches the expected format.",
+			"statusCode": fiber.ErrBadRequest.Code,
+		})
+	}
+
+	draft := utils.Assessments.GetDraft(submission.JobID)
+	if draft == nil {
+		return c.Status(fiber.ErrNotFound.Code).JSON(fiber.Map{
+			"status": "error",
+			"message": "No draft found for the provided job ID",
+			"statusCode": fiber.ErrNotFound.Code,
+		})
+	}
+
+	collated := utils.CollateAssessment(submission, *draft)
+
+	go func() {
+		utils.Assessments.SaveAssessment(collated)
+	}()
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": "success",
+		"message": "Assessment collated and saved successfully",
+		"statusCode": fiber.StatusOK,
+		"data": collated,
+	})
+}
