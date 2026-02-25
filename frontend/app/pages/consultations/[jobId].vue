@@ -3,12 +3,9 @@
     <div class="max-w-6xl mx-auto flex flex-col gap-6">
 
       <!-- Header -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-xl font-semibold">Consultation Report</h1>
+      <div>
+          <h1 class="text-xl font-semibold">Clerking</h1>
           <p class="text-sm text-gray-500">{{ complaint }}</p>
-        </div>
-        <UBadge :color="statusColor" :label="statusLabel" size="lg" />
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -31,85 +28,160 @@
 
           <!-- Result -->
           <template v-else-if="result">
-            <!-- Presenting Complaint -->
             <UCard>
               <template #header>
-                <h2 class="font-semibold">Presenting Complaint</h2>
+                <div class="flex items-center justify-between">
+                  <h2 class="font-semibold">Subjective Assessment</h2>
+                  <UBadge :color="statusColor" :label="statusLabel" size="lg" />
+                </div>
               </template>
-              <p class="text-sm">{{ result.data.subjective.presenting_complaint }}</p>
-            </UCard>
+            
+              <div class="flex flex-col gap-4">
+                <!-- Presenting Complaint -->
+                <UCard>
+                  <template #header>
+                    <h2 class="font-semibold">Presenting Complaint</h2>
+                  </template>
+                  <p class="text-sm">{{ result.processedData.subjective.presenting_complaint }}</p>
+                </UCard>
 
-            <!-- Pain Profile -->
-            <UCard>
-              <template #header>
-                <h2 class="font-semibold">Pain Profile</h2>
-              </template>
-              <div class="flex flex-col gap-3 text-sm">
-                <div class="flex justify-between">
-                  <span class="text-gray-500">Intensity</span>
-                  <UBadge :color="painColor(result.data.subjective.pain_profile.intensity)" :label="`${result.data.subjective.pain_profile.intensity}/10`" />
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-500">Quality</span>
-                  <span>{{ result.data.subjective.pain_profile.quality }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-500">Duration</span>
-                  <span>{{ result.data.subjective.pain_profile.duration }}</span>
-                </div>
-                <div>
-                  <p class="text-gray-500 mb-1">Location</p>
-                  <div class="flex flex-wrap gap-1">
-                    <UBadge v-for="loc in result.data.subjective.pain_profile.location" :key="loc" :label="loc" color="secondary" variant="subtle" />
+                <!-- History -->
+                <UCard>
+                  <template #header>
+                    <h2 class="font-semibold">History of Complaint</h2>
+                  </template>
+                  <p class="text-sm leading-relaxed">{{ result.processedData.subjective.history_of_complaint }}</p>
+                </UCard>
+
+                <!-- Pain Profile -->
+                <UCard>
+                  <template #header>
+                    <h2 class="font-semibold">Pain Profile</h2>
+                  </template>
+                  <div class="flex flex-col gap-3 text-sm">
+                    <div class="flex justify-between">
+                      <span class="text-gray-500">Intensity</span>
+                      <UBadge :color="painColor(result.processedData.subjective.pain_profile.intensity)" :label="`${result.processedData.subjective.pain_profile.intensity}/10`" />
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-500">Quality</span>
+                      <span>{{ result.processedData.subjective.pain_profile.quality }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-500">Duration</span>
+                      <span>{{ result.processedData.subjective.pain_profile.duration }}</span>
+                    </div>
+                    <div>
+                      <p class="text-gray-500 mb-1">Location</p>
+                      <div class="flex flex-wrap gap-1">
+                        <UBadge v-for="loc in result.processedData.subjective.pain_profile.location" :key="loc" :label="loc" color="secondary" variant="subtle" />
+                      </div>
+                    </div>
+                    <div>
+                      <p class="text-gray-500 mb-1">Aggravating Factors</p>
+                      <div class="flex flex-wrap gap-1">
+                        <UBadge v-for="factor in result.processedData.subjective.pain_profile.aggravating" :key="factor" :label="factor" color="error" variant="subtle" />
+                      </div>
+                    </div>
+                    <div>
+                      <p class="text-gray-500 mb-1">Alleviating Factors</p>
+                      <div class="flex flex-wrap gap-1">
+                        <UBadge v-for="factor in result.processedData.subjective.pain_profile.alleviating" :key="factor" :label="factor" color="success" variant="subtle" />
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <p class="text-gray-500 mb-1">Aggravating Factors</p>
-                  <div class="flex flex-wrap gap-1">
-                    <UBadge v-for="factor in result.data.subjective.pain_profile.aggravating" :key="factor" :label="factor" color="error" variant="subtle" />
-                  </div>
-                </div>
-                <div>
-                  <p class="text-gray-500 mb-1">Alleviating Factors</p>
-                  <div class="flex flex-wrap gap-1">
-                    <UBadge v-for="factor in result.data.subjective.pain_profile.alleviating" :key="factor" :label="factor" color="success" variant="subtle" />
-                  </div>
-                </div>
+                </UCard>
+
+                <!-- Red Flags -->
+                <UCard>
+                  <template #header>
+                    <h2 class="font-semibold">Red Flags</h2>
+                  </template>
+                  <ul class="flex flex-col gap-1">
+                    <li v-for="flag in result.processedData.subjective.red_flags" :key="flag" class="text-sm flex items-center gap-2">
+                      <UIcon name="i-heroicons-check-circle" class="text-green-500" />
+                      {{ flag }}
+                    </li>
+                  </ul>
+                  <p v-if="result.processedData.subjective.red_flags.length === 0" class="text-sm text-gray-500">No red flags identified</p>
+                </UCard>
+
+                <!-- Associated Symptoms -->
+                <UCard>
+                  <template #header>
+                    <h2 class="font-semibold">Associated Symptoms</h2>
+                  </template>
+                  <ul class="flex flex-col gap-1">
+                    <li v-for="symptom in result.processedData.subjective.associated_symptoms" :key="symptom" class="text-sm flex items-center gap-2">
+                      <UIcon name="i-heroicons-check-circle" class="text-green-500" />
+                      {{ symptom }}
+                    </li>
+                  </ul>
+                  <p v-if="result.processedData.subjective.associated_symptoms.length === 0" class="text-sm text-gray-500">No associated symptoms identified</p>
+                </UCard>
+
+                <!-- Relevant Medical History -->
+                <UCard>
+                  <template #header>
+                    <h2 class="font-semibold">Relevant Medical History</h2>
+                  </template>
+                  <ul class="flex flex-col gap-1">
+                    <li v-for="condition in result.processedData.subjective.relevant_medical_history" :key="condition" class="text-sm flex items-center gap-2">
+                      <UIcon name="i-heroicons-check-circle" class="text-green-500" />
+                      {{ condition }}
+                    </li>
+                  </ul>
+                  <p v-if="result.processedData.subjective.relevant_medical_history.length === 0" class="text-sm text-gray-500">No relevant medical history identified</p>
+                </UCard>
+
+                <!-- Past Surgical History -->
+                <UCard>
+                  <template #header>
+                    <h2 class="font-semibold">Past Surgical History</h2>
+                  </template>
+                  <ul class="flex flex-col gap-1">
+                    <li v-for="surgery in result.processedData.subjective.past_surgical_history" :key="surgery" class="text-sm flex items-center gap-2">
+                      <UIcon name="i-heroicons-check-circle" class="text-green-500" />
+                      {{ surgery }}
+                    </li>
+                  </ul>
+                  <p v-if="result.processedData.subjective.past_surgical_history.length === 0" class="text-sm text-gray-500">No past surgical history identified</p>
+                </UCard>
+
+                <!-- Drug History -->
+                <UCard>
+                  <template #header>
+                    <h2 class="font-semibold">Drug History</h2>
+                  </template>
+                  <ul class="flex flex-col gap-1">
+                    <li v-for="drug in result.processedData.subjective.drug_history" :key="drug" class="text-sm flex items-center gap-2">
+                      <UIcon name="i-heroicons-check-circle" class="text-green-500" />
+                      {{ drug }}
+                    </li>
+                  </ul>
+                </UCard>
+
+                <!-- Social History -->
+                <UCard>
+                  <template #header>
+                    <h2 class="font-semibold">Social History</h2>
+                  </template>
+                  <ul class="flex flex-col gap-1">
+                    <li v-for="item in result.processedData.subjective.social_history" :key="item" class="text-sm flex items-baseline gap-2">
+                      <UIcon name="i-heroicons-check-circle" class="text-green-500" />
+                      {{ item }}
+                    </li>
+                  </ul>
+                </UCard>
+
+                <!-- Family History -->
+                <UCard>
+                  <template #header>
+                    <h2 class="font-semibold">Family History</h2>
+                  </template>
+                  <p class="text-sm">{{ result.processedData.subjective.family_history }}</p>
+                </UCard>
               </div>
-            </UCard>
-
-            <!-- History -->
-            <UCard>
-              <template #header>
-                <h2 class="font-semibold">History of Complaint</h2>
-              </template>
-              <p class="text-sm leading-relaxed">{{ result.data.subjective.history_of_complaint }}</p>
-            </UCard>
-
-            <!-- Drug History -->
-            <UCard>
-              <template #header>
-                <h2 class="font-semibold">Drug History</h2>
-              </template>
-              <ul class="flex flex-col gap-1">
-                <li v-for="drug in result.data.subjective.drug_history" :key="drug" class="text-sm flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-circle" class="text-green-500" />
-                  {{ drug }}
-                </li>
-              </ul>
-            </UCard>
-
-            <!-- Social History -->
-            <UCard>
-              <template #header>
-                <h2 class="font-semibold">Social History</h2>
-              </template>
-              <ul class="flex flex-col gap-1">
-                <li v-for="item in result.data.subjective.social_history" :key="item" class="text-sm flex items-center gap-2">
-                  <UIcon name="i-heroicons-user" class="text-gray-400" />
-                  {{ item }}
-                </li>
-              </ul>
             </UCard>
           </template>
         </div>
