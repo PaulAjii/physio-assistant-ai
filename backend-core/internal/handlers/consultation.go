@@ -41,7 +41,8 @@ func (h *ConsultationHandler) UploadAudio(c fiber.Ctx) error {
 
 	go func() {
 		// aiBackendUri := os.Getenv("AI_BACKEND_URI")
-		aiBackendUri := "http://localhost:5000/ai/process-audio"
+		// aiBackendUri := "http://localhost:5000/ai/process-audio"
+		aiBackendUri := "https://super-duper-doodle-wjv9q5597pp396g5-5000.app.github.dev/ai/process-audio"
 		result, err := utils.ForwardAudioToAI(savedFile, aiBackendUri)
 		utils.Store.Complete(jobId, result, err)
 	}()
