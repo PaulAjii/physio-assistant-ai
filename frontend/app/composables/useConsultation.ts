@@ -29,15 +29,24 @@ export const useConsultation = () => {
     );
 
     eventSource.addEventListener("result", (e) => {
-      const data = JSON.parse(e.data);
-      onResult(data);
-      onError(null);
+      if (!e.data) return
+      const data = JSON.parse(e.data)
+      onResult(data)
+      eventSource.close()
     });
 
-    eventSource.addEventListener("error", (e) => {
-      const data = JSON.parse((e as MessageEvent).data);
-      onError(data);
-      eventSource.close();
+    eventSource.addEventListener("error", (e: MessageEvent) => {
+      if (e.data) {
+        try {
+          const data = JSON.parse(e.data)
+          onError(data)
+        } catch {
+          onError({ message: 'An error occurred during processing' })
+        }
+      } else {
+        onError({ message: 'Could not connect to the processing stream. Please try again.' })
+      }
+      eventSource.close()
     });
     return eventSource;
   };
