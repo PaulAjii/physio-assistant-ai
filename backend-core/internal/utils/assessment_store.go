@@ -8,21 +8,21 @@ import (
 type AssessmentStore struct {
 	mu sync.RWMutex
 	assessments map[string]*models.CollatedAssessment
-	drafts map[string]*models.AIResponse
+	drafts map[string]*models.AIData
 }
 
 var Assessments = &AssessmentStore{
 	assessments: make(map[string]*models.CollatedAssessment),
-	drafts: make(map[string]*models.AIResponse),
+	drafts: make(map[string]*models.AIData),
 }
 
-func (s *AssessmentStore) SaveDraft(jobID string, draft *models.AIResponse) {
+func (s *AssessmentStore) SaveDraft(jobID string, draft *models.AIData) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.drafts[jobID] = draft
 }
 
-func (s *AssessmentStore) GetDraft(jobID string) *models.AIResponse {
+func (s *AssessmentStore) GetDraft(jobID string) *models.AIData {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.drafts[jobID]

@@ -21,6 +21,6 @@ type CollatedAssessment struct {
 	Complaint string `json:"complaint"`
 	ObjectiveFindings []ObjectiveFinding `json:"objective_findings"`
 	SubjectiveFindings Subjective `json:"subjective_findings"`
-	AIDraft AIResponse `json:"ai_draft"`
+	AIDraft AIData `json:"ai_draft"`
 	CreatedAt time.Time `json:"created_at"`
 }
