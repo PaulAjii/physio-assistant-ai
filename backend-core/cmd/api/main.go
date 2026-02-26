@@ -30,6 +30,7 @@ func main() {
 	consultationGroup := app.Group("/api/v1/consultation")
 	consultationGroup.Get("/stream/:jobId", consultationHandler.StreamResult)
 	consultationGroup.Post("/upload", consultationHandler.UploadAudio)
+	consultationGroup.Post("/collate-results", consultationHandler.CollateResults)
 
 	log.Fatal(app.Listen(":8080"))
 }
