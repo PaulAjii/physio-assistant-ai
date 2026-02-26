@@ -75,7 +75,6 @@ func (h *ConsultationHandler) StreamResult(c fiber.Ctx) error {
 	<-utils.Store.Wait(jobId)
 
 	completed := utils.Store.Get(jobId)
-	utils.Store.Delete(jobId)
 
 	var event string
 	if completed.Error != nil {
@@ -86,6 +85,7 @@ func (h *ConsultationHandler) StreamResult(c fiber.Ctx) error {
 		})
 		event = fmt.Sprintf("event: error\ndata: %s\n\n", string(payload))
 		c.WriteString(event)
+		utils.Store.Delete(jobId)
 		return nil
 	}
 
@@ -98,6 +98,7 @@ func (h *ConsultationHandler) StreamResult(c fiber.Ctx) error {
 		})
 		event = fmt.Sprintf("event: error\ndata: %s\n\n", string(payload))
 		c.WriteString(event)
+		utils.Store.Delete(jobId)
 		return nil
 	}
 
@@ -108,6 +109,9 @@ func (h *ConsultationHandler) StreamResult(c fiber.Ctx) error {
 		"processedData": result.Data,
 	})
 	event = fmt.Sprintf("event: result\ndata: %s\n\n", string(payload))
+
+	utils.Assessments.SaveDraft(jobId, &result.Data)
+	utils.Store.Delete(jobId)
 
 	c.WriteString(event)
 	return nil
