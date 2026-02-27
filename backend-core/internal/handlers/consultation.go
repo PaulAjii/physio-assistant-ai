@@ -41,8 +41,7 @@ func (h *ConsultationHandler) UploadAudio(c fiber.Ctx) error {
 
 	go func() {
 		// aiBackendUri := os.Getenv("AI_BACKEND_URI")
-		// aiBackendUri := "http://localhost:5000/ai/process-audio"
-		aiBackendUri := "https://super-duper-doodle-wjv9q5597pp396g5-5000.app.github.dev/ai/process-audio"
+		aiBackendUri := "http://localhost:5000/ai/process-audio"
 		result, err := utils.ForwardAudioToAI(savedFile, aiBackendUri)
 		utils.Store.Complete(jobId, result, err)
 	}()
@@ -110,7 +109,7 @@ func (h *ConsultationHandler) StreamResult(c fiber.Ctx) error {
 	})
 	event = fmt.Sprintf("event: result\ndata: %s\n\n", string(payload))
 
-	utils.Assessments.SaveDraft(jobId, &result.Data)
+	utils.Assessments.SaveDraft(jobId, &result)
 	utils.Store.Delete(jobId)
 
 	c.WriteString(event)
@@ -121,8 +120,8 @@ func (h *ConsultationHandler) CollateResults(c fiber.Ctx) error {
 	var submission *models.AssessmentSubmission
 	if err := c.Bind().Body(&submission); err != nil {
 		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
-			"status": "error",
-			"message": "Invalid request body. Enure it matches the expected format.",
+			"status":     "error",
+			"message":    "Invalid request body. Enure it matches the expected format.",
 			"statusCode": fiber.ErrBadRequest.Code,
 		})
 	}
@@ -130,8 +129,8 @@ func (h *ConsultationHandler) CollateResults(c fiber.Ctx) error {
 	draft := utils.Assessments.GetDraft(submission.JobID)
 	if draft == nil {
 		return c.Status(fiber.ErrNotFound.Code).JSON(fiber.Map{
-			"status": "error",
-			"message": "No draft found for the provided job ID",
+			"status":     "error",
+			"message":    "No draft found for the provided job ID",
 			"statusCode": fiber.ErrNotFound.Code,
 		})
 	}
@@ -143,9 +142,9 @@ func (h *ConsultationHandler) CollateResults(c fiber.Ctx) error {
 	}()
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status": "success",
-		"message": "Assessment collated and saved successfully",
+		"status":     "success",
+		"message":    "Assessment collated and saved successfully",
 		"statusCode": fiber.StatusOK,
-		"data": collated,
+		"data":       collated,
 	})
 }

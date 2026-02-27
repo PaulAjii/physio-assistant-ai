@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func CollateAssessment(submission *models.AssessmentSubmission, draft models.AIData) *models.CollatedAssessment {
+func CollateAssessment(submission *models.AssessmentSubmission, draft models.AIResponse) *models.CollatedAssessment {
 	return &models.CollatedAssessment{
 		ID:        uuid.New().String(),
 		Complaint: submission.Complaint,

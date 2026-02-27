@@ -34,6 +34,6 @@ type CollatedAssessment struct {
 	ID         string     `json:"id"`
 	Complaint  string     `json:"complaint"`
 	Assessment Assessment `json:"assessment"`
-	AIDraft    AIData     `json:"ai_draft"`
+	AIDraft    AIResponse `json:"ai_draft"`
 	CreatedAt  time.Time  `json:"created_at"`
 }
