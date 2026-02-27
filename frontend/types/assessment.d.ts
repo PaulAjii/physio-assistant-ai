@@ -64,7 +64,7 @@ export interface CollatedAssessment {
 }
 
 export interface AssessmentSubmission {
-  jobId: string;
+  jobID: string;
   complaint: string;
   corrected_subjective: Subjective;
   objective_findings: ObjectiveFinding[];
