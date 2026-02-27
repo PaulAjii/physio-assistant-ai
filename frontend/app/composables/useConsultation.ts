@@ -1,3 +1,4 @@
+import type { AssessmentSubmission } from "../../types/assessment.d.ts";
 // API Logic
 export const useConsultation = () => {
   const config = useRuntimeConfig();
@@ -50,5 +51,19 @@ export const useConsultation = () => {
     });
     return eventSource;
   };
-  return { uploadAudio, streamResult };
+
+  const submitAssessment = async (submission: AssessmentSubmission) => {
+    const response = await $fetch<{
+      status: string;
+      message: string;
+      statusCode: number;
+      data?: any;
+    }>(`${baseUri}/consultation/collate-results`, {
+      method: "POST",
+      body: submission,
+    })
+
+    return response;
+  }
+  return { uploadAudio, streamResult, submitAssessment };
 };
