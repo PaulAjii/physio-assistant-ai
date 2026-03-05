@@ -2,11 +2,23 @@ package models
 
 import "time"
 
+type TestInputType string
+
+const (
+	TestInputTypeBinary      TestInputType = "binary"
+	TestInputTypeMeasurement TestInputType = "measurement"
+	TestInputTypeGrading     TestInputType = "grading"
+	TestInputTypeNotes       TestInputType = "notes"
+)
+
 type ObjectiveFinding struct {
-	Category string `json:"category"`
-	Result   string `json:"result"`
-	Notes    string `json:"notes"`
-	Test     string `json:"test"`
+	Category string        `json:"category"`
+	Test     string        `json:"test"`
+	Type     TestInputType `json:"type"`
+	Result   string        `json:"result"`
+	Value    string        `json:"value"`
+	Unit     string        `json:"unit"`
+	Notes    string        `json:"notes"`
 }
 
 type AssessmentSubmission struct {
