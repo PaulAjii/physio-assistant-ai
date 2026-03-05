@@ -20,11 +20,35 @@ export interface Subjective {
   social_history: string[];
 }
 
+export type TestInputType = 'binary' | 'measurement' | 'grading' | 'notes';
+
 export interface ObjectiveFinding {
   category: string;
   test: string;
-  result: string;
+  type: TestInputType;
+  result?: string;
+  value?: string;
+  unit?: string;
   notes: string;
+}
+
+export interface ObjectiveTest {
+  name: string;
+  test: TestInputType;
+  unit?: string;
+}
+
+export interface ObjectiveCategory {
+  category: string;
+  priority: 'high' | 'medium' | 'low';
+  tests: ObjectiveTest[];
+}
+
+export interface ObjectiveTemplate {
+  id?: string;
+  name: string;
+  complaint: string;
+  categories: ObjectiveCategory[];
 }
 
 export interface Assessment {
