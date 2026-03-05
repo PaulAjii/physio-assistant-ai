@@ -14,42 +14,40 @@
                   <UBadge :color="priorityColor(group.priority)" :label="group.priority" variant="subtle" size="sm" />
                   <p class="font-medium text-sm">{{ group.category }}</p>
                 </div>
-                <div v-for="test in group.tests" :key="test" class="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
-                  <span class="text-sm">{{ test }}</span>
-                  <div class="flex gap-2">
-                    <UButton
-                      size="xs"
-                      :color="objectiveFindings[test] === 'positive' ? 'error' : 'neutral'"
-                      variant="soft"
-                      label="Positive"
-                      @click="setFinding(test, 'positive')"
-                    />
-                    <UButton
-                      size="xs"
-                      :color="objectiveFindings[test] === 'negative' ? 'success' : 'neutral'"
-                      variant="soft"
-                      label="Negative"
-                      @click="setFinding(test, 'negative')"
-                    />
-                    <UButton
-                      size="xs"
-                      :color="objectiveFindings[test] === 'not_tested' ? 'warning' : 'neutral'"
-                      variant="soft"
-                      label="N/T"
-                      @click="setFinding(test, 'not_tested')"
-                    />
+                <div v-for="test in group.tests" :key="test" class="flex flex-col gap-2 p-3 bg-gray-700 rounded-lg">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm">{{ test }}</span>
+                    <div class="flex gap-2">
+                      <UButton
+                        size="xs"
+                        :color="objectiveFindings[test]?.result === 'positive' ? 'error' : 'neutral'"
+                        variant="soft"
+                        label="Positive"
+                        @click="setFinding(test, group.category, 'positive')"
+                      />
+                      <UButton
+                        size="xs"
+                        :color="objectiveFindings[test]?.result === 'negative' ? 'success' : 'neutral'"
+                        variant="soft"
+                        label="Negative"
+                        @click="setFinding(test, group.category, 'negative')"
+                      />
+                      <UButton
+                        size="xs"
+                        :color="objectiveFindings[test]?.result === 'not_tested' ? 'warning' : 'neutral'"
+                        variant="soft"
+                        label="N/T"
+                        @click="setFinding(test, group.category, 'not_tested')"
+                      />
+                    </div>
                   </div>
+                  <UTextarea
+                    :model-value="objectiveFindings[test]?.notes ?? ''"
+                    :placeholder="`Notes for ${test}...`"
+                    size="sm"
+                    @update:model-value="updateNotes(test, group.category, $event)"
+                  />
                 </div>
-
-                <!-- Notes field -->
-                <UTextarea
-                  v-model="objectiveNotes[test]"
-                  v-for="test in group.tests"
-                  :key="`note-${test}`"
-                  :placeholder="`Notes for ${test}...`"
-                  size="sm"
-                  class="mt-1"
-                />
               </div>
             </div>
 
@@ -68,13 +66,14 @@
 </template>
 
 <script setup lang="ts">
+import type { ObjectiveFinding } from '~~/types/assessment';
+
 const props = defineProps<{
     result: any;
     complaint: string;
 }>();
 
-const objectiveFindings = ref<Record<string, string>>({})
-const objectiveNotes = ref<Record<string, string>>({});
+const objectiveFindings = ref<Record<string, ObjectiveFinding>>({})
 
 const presets: Record<string, { category: string; tests: string[]; priority: string }[]> = {
   'Knee Pain': [
@@ -112,23 +111,28 @@ const priorityColor = (priority: string) => {
   return 'success'
 }
 
-const setFinding = (test: string, value: string) => {
-    objectiveFindings.value[test] = value;
+const setFinding = (test: string, value: string, category: string) => {
+    if (!objectiveFindings.value[test]) {
+      objectiveFindings.value[test] = { category, test, result: value, notes: ""}
+    } else {
+      objectiveFindings.value[test].result = value;
+    }
 }
 
-const emit = defineEmits([ 'submit-objective' ]);
+const emit = defineEmits<{
+  'submit:objective': [findings: ObjectiveFinding[]];
+}>();
 
-const findings = ref<{category: string; test: string; result: string; notes: string}[]>([])
+const updateNotes = (test: string, category: string, value: string) => {
+  if (!objectiveFindings.value[test]) {
+    objectiveFindings.value[test] = { category, test, result: 'not_tested', notes: value }
+  } else {
+    objectiveFindings.value[test].notes = value
+  }
+}
 
 const submitObjective = () => {
-    findings.value = objectiveChecklist.value.flatMap(group =>
-    group.tests.map(test => ({
-      category: group.category,
-      test,
-      result: objectiveFindings.value[test] || 'not_tested',
-      notes: objectiveNotes.value[test] || ''
-    }))
-  );
-  emit('submit-objective', findings.value);
+  const findings = Object.values(objectiveFindings.value);
+  emit('submit:objective', findings);
 }
 </script>

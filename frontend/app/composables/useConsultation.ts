@@ -1,4 +1,4 @@
-import type { AssessmentSubmission } from "../../types/assessment.d.ts";
+import type { AssessmentSubmission, Assessment } from "../../types/assessment.d.ts";
 // API Logic
 export const useConsultation = () => {
   const config = useRuntimeConfig();
@@ -65,5 +65,30 @@ export const useConsultation = () => {
 
     return response;
   }
-  return { uploadAudio, streamResult, submitAssessment };
+
+  const getAssessment = async (id: string) => {
+    const response = await $fetch<{
+      status: string;
+      message: string;
+      statusCode: number;
+      data?: any;
+    }>(`${ baseUri }/assessments/${ id }`)
+
+    return response;
+  }
+
+  const updateAssessment = async (id: string, submission: Assessment ) => {
+    const response = await $fetch<{
+      status: string;
+      message: string;
+      statusCode: number;
+      data?: any;
+    }>(`${ baseUri }/assessments/${ id }`, {
+      method: "PUT",
+      body: submission,
+    })
+
+    return response
+  }
+  return { uploadAudio, streamResult, submitAssessment, getAssessment, updateAssessment };
 };

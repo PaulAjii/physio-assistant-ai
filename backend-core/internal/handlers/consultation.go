@@ -148,3 +148,58 @@ func (h *ConsultationHandler) CollateResults(c fiber.Ctx) error {
 		"data":       collated,
 	})
 }
+
+func (h *ConsultationHandler) GetAssessment(c fiber.Ctx) error {
+	id := c.Params("id")
+
+	assessment := utils.Assessments.GetAssessment(id)
+	if assessment == nil {
+		return c.Status(fiber.ErrNotFound.Code).JSON(fiber.Map{
+			"status":     "error",
+			"message":    "Assessment not found",
+			"statusCode": fiber.ErrNotFound.Code,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status":     "success",
+		"message":    "Assessment retrieved successfully",
+		"statusCode": fiber.StatusOK,
+		"data":       assessment,
+	})
+}
+
+func (h *ConsultationHandler) UpdateAssessment(c fiber.Ctx) error {
+	id := c.Params("id")
+
+	existing := utils.Assessments.GetAssessment(id)
+	if existing == nil {
+		return c.Status(fiber.ErrNotFound.Code).JSON(fiber.Map{
+			"status":     "error",
+			"message":    "Assessment not found",
+			"statusCode": fiber.ErrNotFound.Code,
+		})
+	}
+
+	var updateData models.Assessment
+	if err := c.Bind().Body(&updateData); err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"status":     "error",
+			"message":    "Invalid request body",
+			"statusCode": fiber.ErrBadRequest.Code,
+		})
+	}
+
+	existing.Assessment = updateData
+
+	go func() {
+		utils.Assessments.SaveAssessment(existing)
+	}()
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status":     "success",
+		"message":    "Assessment updated successfully",
+		"statusCode": fiber.StatusOK,
+		"data":       existing,
+	})
+}
