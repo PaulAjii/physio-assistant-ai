@@ -32,5 +32,9 @@ func main() {
 	consultationGroup.Post("/upload", consultationHandler.UploadAudio)
 	consultationGroup.Post("/collate-results", consultationHandler.CollateResults)
 
+	assessmentGroup := app.Group("/api/v1/assessments")
+	assessmentGroup.Get("/:id", consultationHandler.GetAssessment)
+	assessmentGroup.Put("/:id", consultationHandler.UpdateAssessment)
+
 	log.Fatal(app.Listen(":8080"))
 }
