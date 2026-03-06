@@ -1,8 +1,9 @@
 import { Agent } from '@mastra/core/agent';
+import { randomUUID } from 'crypto';
 
 export const createPhysioAgent = (): Agent => {
   return new Agent({
-    id: 'physio-agent',
+    id: `physio-agent-${randomUUID()}`,
     name: 'Physio Agent',
     instructions: `
 You are an expert AI Medical Scribe for a Physiotherapy clinic in Nigeria.
