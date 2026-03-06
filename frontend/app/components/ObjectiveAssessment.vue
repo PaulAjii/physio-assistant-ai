@@ -16,7 +16,7 @@
                 </div>
                 <div v-for="test in group.tests" :key="test.name" class="flex flex-col gap-2 p-3 bg-gray-700 rounded-lg">
                   <div class="flex items-center justify-between">
-                    <span class="text-sm">{{ test.name }}</span>
+                    <span class="text-sm text-gray-200">{{ test.name }}</span>
                     <div v-if="test.test === 'binary'" class="flex gap-2">
                       <UButton
                         size="xs"
@@ -41,19 +41,21 @@
                       />
                     </div>
 
-                    <div v-if-else="test.test === 'measurement'" class="flex gap-2">
+                    <div v-else-if="test.test === 'measurement'" class="flex items-center gap-2">
                       <UInput
                         :model-value="getValue(test.name)"
                         type="number"
                         size="sm"
                         class="w-24"
+                        :min="0"
+                        :max="360"
                         :placeholder="test.unit ?? ''"
                         @update:model-value="updateValue(test, group.category, $event)"
                       />
                       <span v-if="test.unit" class="text-xs text-gray-400">{{ test.unit  }}</span>
                     </div>
 
-                    <div v-if-else="test.test === 'grading'" class="flex gap-2">
+                    <div v-else-if="test.test === 'grading'" class="flex gap-2">
                       <UButton
                         v-for="grade in [0, 1, 2, 3, 4 , 5]"
                         :key="grade"
@@ -67,8 +69,11 @@
                   </div>
                   <UTextarea
                     :model-value="getNotes(test.name)"
+                    class="field-sizing-content"
                     :placeholder="test.test === 'notes' ? `Findings for ${ test.name }` : `Additional notes for ${ test.name }`"
                     size="sm"
+                    :rows="3"
+                    autoresize
                     @update:model-value="updateNotes(test, group.category, $event)"
                   />
                 </div>
