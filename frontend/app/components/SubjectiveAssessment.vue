@@ -45,7 +45,7 @@
                   <UTextarea
                     v-model="editableSubjective.presenting_complaint"
                     :disabled="!isEditing"
-                    :rows="2"
+                    autoresize
                     class="w-full"
                   />
                 </UCard>
@@ -58,7 +58,7 @@
                   <UTextarea
                     v-model="editableSubjective.history_of_complaint"
                     :disabled="!isEditing"
-                    :rows="5"
+                    autoresize
                     class="w-full"
                   />
                 </UCard>
@@ -154,11 +154,12 @@
                     :model-value="editableSubjective.red_flags.join(', ')"
                     placeholder="Comma separated"
                     size="sm"
+                    class="w-full"
                     @update:model-value="editableSubjective.red_flags = splitList($event)"
                   />
                   <template v-else>
                     <ul class="flex flex-col gap-1">
-                      <li v-for="flag in editableSubjective.red_flags" :key="flag" class="text-sm flex items-center gap-2">
+                      <li v-for="flag in editableSubjective.red_flags" :key="flag" class="text-sm flex items-center gap-2 w-full">
                         <UIcon name="i-heroicons-exclamation-triangle" class="text-error" />
                         {{ flag }}
                       </li>
