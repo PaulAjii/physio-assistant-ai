@@ -50,7 +50,7 @@
                         :min="0"
                         :max="360"
                         :placeholder="test.unit ?? ''"
-                        @update:model-value="updateValue(test, group.category, $event)"
+                        @update:model-value="updateValue(test, group.category, String($event))"
                       />
                       <span v-if="test.unit" class="text-xs text-gray-400">{{ test.unit  }}</span>
                     </div>
@@ -134,9 +134,9 @@ const emit = defineEmits<{
 
 const updateValue = (test: ObjectiveTest, category: string, value: string) => {
   if (!objectiveFindings.value[test.name]) {
-    objectiveFindings.value[test.name] = { category, type: test.test, test: test.name, result: '', value, unit: test.unit ?? '', notes: '' }
+    objectiveFindings.value[test.name] = { category, type: test.test, test: test.name, result: '', value: String(value), unit: test.unit ?? '', notes: '' }
   } else {
-    objectiveFindings.value[test.name].value = value;
+    objectiveFindings.value[test.name].value = String(value);
   }
 }
 
