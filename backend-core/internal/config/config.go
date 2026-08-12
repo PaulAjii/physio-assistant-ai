@@ -13,6 +13,12 @@ type Config struct {
 	AIBackendURI   string
 	UploadDir      string
 	AllowedOrigins []string
+
+	// DatabaseURL is the Postgres DSN backend-core connects with. It must use
+	// the runtime role (physio_app), NOT the owner: the owner bypasses RLS, so
+	// connecting as the owner would silently disable tenant isolation. Has no
+	// default because a DSN carries a password; startup requires it explicitly.
+	DatabaseURL string
 }
 
 // Load reads configuration from the environment, applying sensible defaults so
@@ -28,6 +34,7 @@ func Load() Config {
 		AIBackendURI:   getEnv("AI_BACKEND_URI", "http://localhost:5000/ai/process-audio"),
 		UploadDir:      getEnv("UPLOAD_DIR", "uploads"),
 		AllowedOrigins: origins,
+		DatabaseURL:    getEnv("DATABASE_URL", ""),
 	}
 }
 
