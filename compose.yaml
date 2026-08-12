@@ -1,0 +1,97 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Local infrastructure for physio-assistant-ai: Postgres + MinIO.
+#
+# Application services (backend-core, backend-ai, backend-vision) are NOT here
+# yet — they still run on the host during development. They get containerised
+# once their Containerfiles exist.
+#
+# Usage (Podman):
+#   podman machine start          # macOS/Windows only, once per boot
+#   make up                       # or: podman compose up -d
+#
+# NOTE: image names are fully qualified (docker.io/..., quay.io/...) because
+# Podman does not silently default to Docker Hub the way Docker does — short
+# names prompt for a registry or fail outright in compose.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  postgres:
+    image: docker.io/library/postgres:17-alpine
+    container_name: physio-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-physio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-physio}
+      # Consumed by the init script below to create the least-privilege
+      # runtime role that RLS is enforced against.
+      APP_DB_USER: ${APP_DB_USER:-physio_app}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD is required}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # Scripts in this directory run once, on first initialisation of an empty
+      # data volume. The :z suffix relabels for SELinux (needed on Fedora/RHEL
+      # hosts, harmless on macOS).
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro,z
+    healthcheck:
+      # Without the -d flag pg_isready reports ready slightly before the
+      # database itself accepts connections, which races the migrations.
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-physio} -d ${POSTGRES_DB:-physio}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: physio-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD is required}
+    ports:
+      - "${MINIO_PORT:-9000}:9000" # S3 API
+      - "${MINIO_CONSOLE_PORT:-9001}:9001" # Web console
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # One-shot job: creates the media bucket, then exits. Re-running is harmless.
+  minio-init:
+    image: quay.io/minio/mc:latest
+    container_name: physio-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD is required}
+      MINIO_BUCKET: ${MINIO_BUCKET:-physio-media}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}"
+        mc mb --ignore-existing "local/$${MINIO_BUCKET}"
+        # Medical media must never be publicly readable: keep the bucket
+        # private and serve it through presigned URLs only.
+        mc anonymous set none "local/$${MINIO_BUCKET}"
+        echo "MinIO ready: bucket '$${MINIO_BUCKET}' is private."
+    restart: "no"
+
+volumes:
+  postgres-data:
+  minio-data:
