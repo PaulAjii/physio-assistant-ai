@@ -1,0 +1,29 @@
+# Normalize line endings: LF in the repository, always.
+# The repo was first committed from Windows; without this, files checked out or
+# edited on another OS show up as fully rewritten (CRLF vs LF) noise diffs.
+* text=auto eol=lf
+
+# Shell scripts must keep LF or they break in containers.
+*.sh text eol=lf
+
+# Explicitly binary — never touch these.
+*.exe binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.mp3 binary
+*.wav binary
+*.m4a binary
+*.webm binary
+*.mp4 binary
+
+# Lockfiles: collapse in diffs and treat as generated in language stats.
+pnpm-lock.yaml -diff linguist-generated
+go.sum -diff linguist-generated

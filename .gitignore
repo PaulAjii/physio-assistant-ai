@@ -1,4 +1,26 @@
-*/uploads
-**/*/uploads
-***/**/*/uploads
-*/main.exe
+# Environment / secrets — never commit real env files
+.env
+.env.*
+!.env.example
+**/.env
+!**/.env.example
+
+# Uploaded runtime artifacts
+uploads/
+**/uploads/
+
+# Compiled binaries
+*.exe
+main
+**/main.exe
+
+# Dependencies / build output
+node_modules/
+**/node_modules/
+dist/
+.output/
+.nuxt/
+
+# OS / editor
+.DS_Store
+.idea/

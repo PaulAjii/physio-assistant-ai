@@ -1,0 +1,24 @@
+# Binaries
+main
+main.exe
+*.exe
+/bin/
+/dist/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Uploads (runtime artifacts)
+uploads/
+
+# Go
+*.test
+*.out
+coverage.*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
