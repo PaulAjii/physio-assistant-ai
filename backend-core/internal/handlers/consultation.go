@@ -4,16 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/PaulAjii/physio-assistant-ai/internal/config"
 	"github.com/PaulAjii/physio-assistant-ai/internal/models"
 	"github.com/PaulAjii/physio-assistant-ai/internal/utils"
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 )
 
-type ConsultationHandler struct{}
+type ConsultationHandler struct {
+	aiBackendURI string
+	uploadDir    string
+}
 
-func NewConsultationHandler() *ConsultationHandler {
-	return &ConsultationHandler{}
+func NewConsultationHandler(cfg config.Config) *ConsultationHandler {
+	return &ConsultationHandler{
+		aiBackendURI: cfg.AIBackendURI,
+		uploadDir:    cfg.UploadDir,
+	}
 }
 
 func (h *ConsultationHandler) UploadAudio(c fiber.Ctx) error {
@@ -26,7 +33,7 @@ func (h *ConsultationHandler) UploadAudio(c fiber.Ctx) error {
 		})
 	}
 
-	savedFile, err := utils.SaveUploadedFile(file, "uploads")
+	savedFile, err := utils.SaveUploadedFile(file, h.uploadDir)
 	if err != nil {
 		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.Map{
 			"status":     "error",
@@ -40,9 +47,7 @@ func (h *ConsultationHandler) UploadAudio(c fiber.Ctx) error {
 	utils.Store.Register(jobId)
 
 	go func() {
-		// aiBackendUri := os.Getenv("AI_BACKEND_URI")
-		aiBackendUri := "http://localhost:5000/ai/process-audio"
-		result, err := utils.ForwardAudioToAI(savedFile, aiBackendUri)
+		result, err := utils.ForwardAudioToAI(savedFile, h.aiBackendURI)
 		utils.Store.Complete(jobId, result, err)
 	}()
 
