@@ -1,5 +1,5 @@
 export interface PainProfile {
-  intensity: number;
+  intensity: number | null;
   quality: string;
   aggravating: string[];
   alleviating: string[];

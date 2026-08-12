@@ -30,7 +30,10 @@ type Subjective struct {
 }
 
 type PainProfile struct {
-	Intensity   int      `json:"intensity"`
+	// Intensity is nullable: the AI schema declares it as number().nullable()
+	// and returns null when pain intensity was not reported, so a pointer is
+	// required to unmarshal null without erroring.
+	Intensity   *int     `json:"intensity"`
 	Quality     string   `json:"quality"`
 	Aggravating []string `json:"aggravating"`
 	Alleviating []string `json:"alleviating"`

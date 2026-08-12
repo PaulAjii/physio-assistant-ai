@@ -95,7 +95,7 @@
                       <UBadge
                         v-else
                         :color="painColor(assessment.assessment.pain_profile.intensity)"
-                        :label="`${assessment.assessment.pain_profile.intensity}/10`"
+                        :label="assessment.assessment.pain_profile.intensity != null ? `${assessment.assessment.pain_profile.intensity}/10` : 'Not reported'"
                       />
                     </div>
                     <div class="flex justify-between items-center">
@@ -449,7 +449,8 @@ const splitList = (value: string) =>
 const formatDate = (dateStr: string) =>
   new Date(dateStr).toLocaleString()
 
-const painColor = (intensity: number) => {
+const painColor = (intensity: number | null) => {
+  if (intensity == null) return 'neutral'
   if (intensity <= 3) return 'success'
   if (intensity <= 6) return 'warning'
   return 'error'

@@ -80,7 +80,7 @@
                         size="sm"
                         class="w-20"
                       />
-                      <UBadge v-else :color="painColor(editableSubjective.pain_profile.intensity)" :label="`${editableSubjective.pain_profile.intensity}/10`" />
+                      <UBadge v-else :color="painColor(editableSubjective.pain_profile.intensity)" :label="editableSubjective.pain_profile.intensity != null ? `${editableSubjective.pain_profile.intensity}/10` : 'Not reported'" />
                     </div>
                     <div class="flex justify-between items-center">
                       <span class="text-gray-500">Quality</span>
@@ -346,7 +346,8 @@ watch(
 const splitList = (value: string) => value.split(',').map((s) => s.trim()).filter(Boolean)
 
 
-const painColor = (intensity: number) => {
+const painColor = (intensity: number | null) => {
+  if (intensity == null) return 'neutral'
   if (intensity <= 3) return 'success'
   if (intensity <= 6) return 'warning'
   return 'error'
