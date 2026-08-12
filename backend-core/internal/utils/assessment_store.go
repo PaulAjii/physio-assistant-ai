@@ -37,7 +37,7 @@ func (s *AssessmentStore) SaveAssessment(assessment *models.CollatedAssessment) 
 
 func (s *AssessmentStore) GetAssessment(id string) *models.CollatedAssessment {
 	s.mu.RLock()
-	defer s.mu.RLock()
+	defer s.mu.RUnlock()
 	return s.assessments[id]
 }
 
