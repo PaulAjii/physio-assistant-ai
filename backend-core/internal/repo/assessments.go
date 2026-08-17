@@ -67,7 +67,7 @@ INSERT INTO assessments (clinic_id, session_id, subjective, objective, ai_summar
 VALUES ($1, $2, COALESCE($3, '{}'::jsonb), COALESCE($4, '{}'::jsonb), $5, $6)
 RETURNING ` + assessmentColumns
 
-// Create writes the first assessment for a session. A second live assessment for
+// Create writes the first assessment for a sess<ion. A second live assessment for
 // the same session violates the partial unique index and surfaces as ErrConflict.
 func (r *AssessmentRepo) Create(ctx context.Context, clinicID string, p CreateAssessmentParams) (*models.AssessmentRecord, error) {
 	var a models.AssessmentRecord
